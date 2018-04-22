@@ -92,7 +92,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         String githubQuery = mSearchBoxEditText.getText().toString();
 
         // (17) If no search was entered, indicate that there isn't anything to search for and return
-        if (githubQuery == null || githubQuery.isEmpty()) {
+        if (githubQuery.isEmpty()) {
             mUrlDisplayTextView.setText("Não foi inserida nenhuma busca");
             return;
         }
