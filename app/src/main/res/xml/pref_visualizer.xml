@@ -23,6 +23,12 @@
         android:summaryOn="@string/pref_show_true"
         android:title="@string/pref_show_treble_label" />
 
-    <!-- TODO (1) Add a list preference -->
+    <!--  (1) Add a list preference -->
+    <ListPreference android:title="@string/pref_set_color"
+        android:entryValues="@array/pref_color_values"
+        android:entries="@array/pref_color_labels"
+        android:key="@string/pref_set_color_key"
+        android:defaultValue="@string/pref_color_red_value"
+        />
 
 </PreferenceScreen>
