@@ -59,7 +59,6 @@ public class VisualizerActivity extends AppCompatActivity implements SharedPrefe
                 getResources().getBoolean(R.bool.pref_show_mid_range_default)));
         mVisualizerView.setShowTreble(sharedPreferences.getBoolean(getString(R.string.pref_show_treble_key),
                 getResources().getBoolean(R.bool.pref_show_treble_default)));
-        mVisualizerView.setMinSizeScale(1);
         loadColorFromPreferences(sharedPreferences);
         setShapeSize(sharedPreferences);
         // Register the listener
@@ -68,7 +67,7 @@ public class VisualizerActivity extends AppCompatActivity implements SharedPrefe
 
     private void setShapeSize(SharedPreferences sharedPreferences) {
         String shapeSize = sharedPreferences.getString(getString(R.string.pref_size_shape_key), getString(R.string.pref_size_default));
-        mVisualizerView.setMinSizeScale(Integer.valueOf(shapeSize));
+        mVisualizerView.setMinSizeScale(Float.valueOf(shapeSize));
     }
 
     private void loadColorFromPreferences(SharedPreferences sharedPreferences) {
