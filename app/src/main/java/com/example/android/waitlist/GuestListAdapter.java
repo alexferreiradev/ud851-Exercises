@@ -1,6 +1,7 @@
 package com.example.android.waitlist;
 
 import android.content.Context;
+import android.database.Cursor;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,17 +12,22 @@ import android.widget.TextView;
 public class GuestListAdapter extends RecyclerView.Adapter<GuestListAdapter.GuestViewHolder> {
 
     private Context mContext;
-    // TODO (8) Add a new local variable mCount to store the count of items to be displayed in the recycler view
+    private Cursor mCursor;
+    private int mTotalItems;
+    //  (8) Add a new local variable mCount to store the count of items to be displayed in the recycler view
 
     /**
      * Constructor using the context and the db cursor
-     *
-     * @param context the calling context/activity
+     *  @param context the calling context/activity
+     * @param cursor
+     * @param totalItems
      */
-    // TODO (9) Update the Adapter constructor to accept an integer for the count along with the context
-    public GuestListAdapter(Context context) {
+    //  (9) Update the Adapter constructor to accept an integer for the count along with the context
+    public GuestListAdapter(Context context, Cursor cursor, int totalItems) {
         this.mContext = context;
-        // TODO (10) Set the local mCount to be equal to count
+        //  (10) Set the local mCount to be equal to count
+        mCursor = cursor;
+        this.mTotalItems = totalItems;
     }
 
     @Override
@@ -38,10 +44,10 @@ public class GuestListAdapter extends RecyclerView.Adapter<GuestListAdapter.Gues
     }
 
 
-    // TODO (11) Modify the getItemCount to return the mCount value rather than 0
+    //  (11) Modify the getItemCount to return the mCount value rather than 0
     @Override
     public int getItemCount() {
-        return 0;
+        return mTotalItems;
     }
 
 
