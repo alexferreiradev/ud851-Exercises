@@ -23,7 +23,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
-
+import android.widget.TextView;
 import com.udacity.example.droidtermsprovider.DroidTermsExampleContract;
 
 /**
@@ -32,113 +32,145 @@ import com.udacity.example.droidtermsprovider.DroidTermsExampleContract;
 
 public class MainActivity extends AppCompatActivity {
 
-    // The data from the DroidTermsExample content provider
-    private Cursor mData;
-
-    // The current state of the app
-    private int mCurrentState;
-
-    private Button mButton;
-
-    // This state is when the word definition is hidden and clicking the button will therefore
-    // show the definition
-    private final int STATE_HIDDEN = 0;
-
-    // This state is when the word definition is shown and clicking the button will therefore
-    // advance the app to the next word
-    private final int STATE_SHOWN = 1;
+	// This state is when the word definition is hidden and clicking the button will therefore
+	// show the definition
+	private final int STATE_HIDDEN = 0;
+	// This state is when the word definition is shown and clicking the button will therefore
+	// advance the app to the next word
+	private final int STATE_SHOWN = 1;
+	// The data from the DroidTermsExample content provider
+	private Cursor mData;
+	// The current state of the app
+	private int mCurrentState;
+	private Button mNextBT;
+	private TextView mDefinitionTV;
+	private TextView mViewWordTV;
 
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_main);
 
-        // Get the views
-        // TODO (1) You'll probably want more than just the Button
-        mButton = (Button) findViewById(R.id.button_next);
+		// Get the views
+		// (1) You'll probably want more than just the Button
+		mNextBT = (Button) findViewById(R.id.button_next);
+		mDefinitionTV = (TextView) findViewById(R.id.text_view_definition);
+		mViewWordTV = (TextView) findViewById(R.id.text_view_word);
 
-        //Run the database operation to get the cursor off of the main thread
-        new WordFetchTask().execute();
+		//Run the database operation to get the cursor off of the main thread
+		new WordFetchTask().execute();
 
-    }
+	}
 
-    /**
-     * This is called from the layout when the button is clicked and switches between the
-     * two app states.
-     * @param view The view that was clicked
-     */
-    public void onButtonClick(View view) {
+	/**
+	 * This is called from the layout when the button is clicked and switches between the
+	 * two app states.
+	 *
+	 * @param view The view that was clicked
+	 */
+	public void onButtonClick(View view) {
 
-        // Either show the definition of the current word, or if the definition is currently
-        // showing, move to the next word.
-        switch (mCurrentState) {
-            case STATE_HIDDEN:
-                showDefinition();
-                break;
-            case STATE_SHOWN:
-                nextWord();
-                break;
-        }
-    }
+		// Either show the definition of the current word, or if the definition is currently
+		// showing, move to the next word.
+		switch (mCurrentState) {
+			case STATE_HIDDEN:
+				showDefinition();
+				break;
+			case STATE_SHOWN:
+				nextWord();
+				break;
+		}
+	}
 
-    public void nextWord() {
+	public void nextWord() {
+		// Change button text
+		mNextBT.setText(getString(R.string.show_definition));
+		mCurrentState = STATE_HIDDEN;
 
-        // Change button text
-        mButton.setText(getString(R.string.show_definition));
+		// (3) Go to the next word in the Cursor, show the next word and hide the definition
+		// Note that you shouldn't try to do this if the cursor hasn't been set yet.
+		// If you reach the end of the list of words, you should start at the beginning again.
+		if (mData == null) {
+			return;
+		}
 
-        // TODO (3) Go to the next word in the Cursor, show the next word and hide the definition
-        // Note that you shouldn't try to do this if the cursor hasn't been set yet.
-        // If you reach the end of the list of words, you should start at the beginning again.
-        mCurrentState = STATE_HIDDEN;
+		if (mData.moveToNext()) {
+			setWordDataFromCurrentCursor();
+			hideDefinition();
+		} else if (mData.moveToFirst()) {
+			setWordDataFromCurrentCursor();
+			hideDefinition();
+		}
+	}
 
-    }
+	public void showDefinition() {
 
-    public void showDefinition() {
+		// Change button text
+		mNextBT.setText(getString(R.string.next_word));
 
-        // Change button text
-        mButton.setText(getString(R.string.next_word));
+		// (4) Show the definition
+		mCurrentState = STATE_SHOWN;
+		setDefinitionDataFromCurrentCursor();
+	}
 
-        // TODO (4) Show the definition
-        mCurrentState = STATE_SHOWN;
+	public void hideDefinition() {
 
-    }
+		// Change button text
+		mNextBT.setText(getString(R.string.show_definition));
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        // TODO (5) Remember to close your cursor!
-    }
+		// (4) Show the definition
+		mCurrentState = STATE_HIDDEN;
+		mDefinitionTV.setText("");
+	}
 
-    // Use an async task to do the data fetch off of the main thread.
-    public class WordFetchTask extends AsyncTask<Void, Void, Cursor> {
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		// (5) Remember to close your cursor!
+		mData.close();
+	}
 
-        // Invoked on a background thread
-        @Override
-        protected Cursor doInBackground(Void... params) {
-            // Make the query to get the data
+	private void setWordDataFromCurrentCursor() {
+		String firstWord = mData.getString(mData.getColumnIndex(DroidTermsExampleContract.COLUMN_WORD));
+		mViewWordTV.setText(firstWord);
+	}
 
-            // Get the content resolver
-            ContentResolver resolver = getContentResolver();
+	private void setDefinitionDataFromCurrentCursor() {
+		String firstDefinition = mData.getString(mData.getColumnIndex(DroidTermsExampleContract.COLUMN_DEFINITION));
+		mDefinitionTV.setText(firstDefinition);
+	}
 
-            // Call the query method on the resolver with the correct Uri from the contract class
-            Cursor cursor = resolver.query(DroidTermsExampleContract.CONTENT_URI,
-                    null, null, null, null);
-            return cursor;
-        }
+	// Use an async task to do the data fetch off of the main thread.
+	public class WordFetchTask extends AsyncTask<Void, Void, Cursor> {
+
+		// Invoked on a background thread
+		@Override
+		protected Cursor doInBackground(Void... params) {
+			// Make the query to get the data
+
+			// Get the content resolver
+			ContentResolver resolver = getContentResolver();
+
+			// Call the query method on the resolver with the correct Uri from the contract class
+			Cursor cursor = resolver.query(DroidTermsExampleContract.CONTENT_URI,
+					null, null, null, null);
+			return cursor;
+		}
 
 
-        // Invoked on UI thread
-        @Override
-        protected void onPostExecute(Cursor cursor) {
-            super.onPostExecute(cursor);
-
-            // Set the data for MainActivity
-            mData = cursor;
-
-            // TODO (2) Initialize anything that you need the cursor for, such as setting up
-            // the screen with the first word and setting any other instance variables
-        }
-    }
+		// Invoked on UI thread
+		@Override
+		protected void onPostExecute(Cursor cursor) {
+			super.onPostExecute(cursor);
+			// Set the data for MainActivity
+			mData = cursor;
+			if (mData.moveToFirst()) {
+				setWordDataFromCurrentCursor();
+			}
+			//  (2) Initialize anything that you need the cursor for, such as setting up
+			// the screen with the first word and setting any other instance variables
+		}
+	}
 
 }
